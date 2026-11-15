@@ -5,7 +5,7 @@ __pycache__/
 build/
 dist/
 artifacts/
-.env.colab
+.env.gpu-vm
 models/*/1/model.onnx
 models/*/1/model.onnx.data
 cuda/build/

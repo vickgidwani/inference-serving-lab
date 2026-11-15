@@ -52,7 +52,7 @@ The image benchmark client accepts a local JPEG/PNG. By default it runs the pinn
 - An NVIDIA GPU, recent NVIDIA driver, Docker with NVIDIA Container Toolkit, and Docker Compose for Triton and CUDA execution.
 - A CUDA toolkit compatible with the installed CUDA-enabled PyTorch build for compiling the extension.
 
-The server image is pinned to Triton release `26.09` (`nvcr.io/nvidia/tritonserver:26.09-py3`). NVIDIA lists Triton 2.73.0, ONNX Runtime 1.28.0, and CUDA 13.4.1 in that release. Check the [release notes](https://docs.nvidia.com/deeplearning/triton-inference-server/release-notes/rel-26-09.html) and [compatibility matrix](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/introduction/compatibility.html) if you change the image or CUDA stack.
+The default server image is pinned to Triton release `26.09` (`nvcr.io/nvidia/tritonserver:26.09-py3`). The GCP VM setup script selects an image compatible with the installed NVIDIA driver; with the verified L4 VM's driver 580, it selects `25.11-py3`. NVIDIA lists Triton 2.73.0, ONNX Runtime 1.28.0, and CUDA 13.4.1 in release `26.09`. Check the [release notes](https://docs.nvidia.com/deeplearning/triton-inference-server/release-notes/rel-26-09.html) and [compatibility matrix](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/introduction/compatibility.html) if you change the image or CUDA stack.
 
 ## Setup and run
 
@@ -81,24 +81,31 @@ curl -s localhost:8000/v2/health/ready
 curl -s localhost:8000/v2/models/classify_dynamic/ready
 ```
 
-### Run on a Colab GPU runtime
+### Run on a GCP VM with an NVIDIA L4
 
-The Colab setup script installs the lab's Python extras, Docker Engine and Compose, and the NVIDIA Container Toolkit. It checks the GPU compute capability and host driver, starts Docker without assuming systemd is available, and writes a driver-compatible Triton image selection to the ignored `.env.colab` file. It does not install or replace the host NVIDIA driver.
+This lab uses a Compute Engine `g2-standard-4` VM, which has 4 vCPUs, 16 GiB of memory, and one NVIDIA L4 GPU. Use Ubuntu 24.04 with an NVIDIA driver installed; this setup was verified with Google's `common-cu129-ubuntu-2404-nvidia-580` image and driver 580. The setup script installs Docker Engine, Compose, the NVIDIA Container Toolkit, and the lab's Python exporter/client extras. It checks GPU and driver compatibility, writes the selected Triton image to the ignored `.env.gpu-vm` file, and verifies GPU access from a container. If the VM image has no `python` command with pip, it creates a `.venv`. It does not install or replace the host NVIDIA driver.
 
-Copy or clone this directory into the Colab VM, then run from `inference-serving-lab`:
+Clone the public repository on the VM and run the setup script:
 
 ```bash
-bash scripts/setup_colab.sh
+git clone https://github.com/vickgidwani/inference-serving-lab.git
+cd inference-serving-lab
+sudo bash scripts/setup_gpu_vm.sh
+```
+
+When run through `sudo`, the script adds the invoking user to the Docker group. Reconnect to the VM after setup so the group change takes effect, then export the model and start Triton:
+
+```bash
 inference-lab-export --model-repo models
 mkdir -p artifacts
 curl -L 'https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/hub/parrots.png' \
   -o artifacts/parrots.png
-docker compose --env-file .env.colab up
+docker compose --env-file .env.gpu-vm up
 ```
 
-The script selects Triton `25.03-py3` for driver branches 570–579, `25.11-py3` for branches 580–614, and `26.09-py3` for branch 615 or newer. These images pair CUDA 12.8, 13.0, and 13.4 respectively; NVIDIA's CUDA compatibility guide lists the corresponding driver branches. The T4's compute capability is 7.5, supported by these Triton releases. If Colab blocks the Docker daemon or GPU passthrough, use a GPU VM with Docker and the NVIDIA Container Toolkit instead.
+The script selects Triton `25.03-py3` for driver branches 570–579, `25.11-py3` for branches 580–614, and `26.09-py3` for branch 615 or newer. These images pair CUDA 12.8, 13.0, and 13.4 respectively. For the L4 VM's driver 580, the selected image is `25.11-py3`. To override the selection, set `GPU_VM_TRITON_IMAGE` before running setup; check that the image's CUDA runtime is compatible with the VM's driver.
 
-To use a different image, set `COLAB_TRITON_IMAGE` before running the setup script. That override is written to `.env.colab`; check that its CUDA runtime is compatible with the VM's driver.
+Stop the VM when you're done to stop compute charges. Its boot disk and cached Docker images remain available while the VM is stopped, but disk storage continues to incur charges.
 
 ### ONNX Runtime
 
