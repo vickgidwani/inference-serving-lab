@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "inference-serving-lab"
+version = "0.1.0"
+description = "Hands-on ONNX, Triton Inference Server, and CUDA kernel profiling lab"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.26"]
+
+[project.optional-dependencies]
+export = [
+  "torch>=2.6",
+  "onnx>=1.16",
+  "onnxscript>=0.3",
+  "onnxruntime>=1.19",
+  "transformers>=4.45",
+  "pillow>=10",
+]
+client = ["tritonclient[http]>=2.48,<3", "transformers>=4.45", "pillow>=10"]
+cuda = ["torch>=2.6"]
+
+[project.scripts]
+inference-lab-export = "inference_lab.export_model:main"
+inference-lab-bench-ort = "inference_lab.ort_bench:main"
+inference-lab-bench-triton = "inference_lab.triton_bench:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

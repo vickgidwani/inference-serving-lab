@@ -1,0 +1,19 @@
+name: "classify_dynamic"
+platform: "onnxruntime_onnx"
+max_batch_size: 32
+input [
+  { name: "pixel_values" data_type: TYPE_FP32 dims: [ 3, 224, 224 ] }
+]
+output [
+  { name: "logits" data_type: TYPE_FP32 dims: [ 1000 ] }
+]
+dynamic_batching {
+  preferred_batch_size: [ 4, 8, 16, 32 ]
+  max_queue_delay_microseconds: 2000
+  default_queue_policy {
+    max_queue_size: 128
+    default_timeout_microseconds: 10000
+    timeout_action: REJECT
+  }
+}
+instance_group [ { kind: KIND_GPU count: 1 } ]
