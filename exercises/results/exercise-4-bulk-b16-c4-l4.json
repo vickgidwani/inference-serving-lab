@@ -1,0 +1,61 @@
+{
+  "attempted_requests": 250,
+  "backend": "triton-http-v2",
+  "client_timeout_ms": 60000.0,
+  "concurrency": 4,
+  "contract": "bulk",
+  "deadline_miss_rate": 1.0,
+  "deadline_misses": 250,
+  "failed_requests": 0,
+  "first_failure": null,
+  "image": "artifacts/parrots.png",
+  "input_shape": [
+    16,
+    3,
+    224,
+    224
+  ],
+  "latency_ms": {
+    "max": 163.955266,
+    "p50": 79.57834399999999,
+    "p95": 83.54793099999999,
+    "p99": 134.19647864999996
+  },
+  "measurement_seconds": 5.094843761999073,
+  "model": "classify_bulk",
+  "preprocessing_included_in_latency": false,
+  "preprocessing_mode": "precomputed",
+  "request_rate_per_s": 49.0692181504516,
+  "requests": 250,
+  "row_rate_per_s": 785.1074904072256,
+  "rows_per_request": 16,
+  "runtime": {
+    "platform": "Linux-7.0.0-1017-gcp-x86_64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "slo_ms": 20.0,
+  "top5": [
+    {
+      "class_id": 88,
+      "label": "macaw"
+    },
+    {
+      "class_id": 23,
+      "label": "vulture"
+    },
+    {
+      "class_id": 89,
+      "label": "sulphur-crested cockatoo, Kakatoe galerita, Cacatua galerita"
+    },
+    {
+      "class_id": 503,
+      "label": "cocktail shaker"
+    },
+    {
+      "class_id": 96,
+      "label": "toucan"
+    }
+  ],
+  "url": "localhost:8000",
+  "warmup_requests": 50
+}

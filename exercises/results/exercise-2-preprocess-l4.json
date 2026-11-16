@@ -1,0 +1,43 @@
+{
+  "cpu_decode_and_processor_ms": {
+    "max": 16.502222,
+    "p50": 15.1785435,
+    "p95": 15.46044045
+  },
+  "cpu_spatial_plus_cuda_normalization_ms": {
+    "max": 18.120178,
+    "p50": 17.637726999999998,
+    "p95": 17.7919317
+  },
+  "cuda_kernel_only_ms": {
+    "max": 12.851199507713318,
+    "p50": 9.062399715185165,
+    "p95": 9.884159974753857
+  },
+  "gpu": "NVIDIA L4",
+  "image": "artifacts/parrots.png",
+  "max_absolute_error": 0.0,
+  "measurement_note": "CUDA end-to-end includes image decode, Hugging Face spatial resize/crop, host-to-device copy, and fused normalization/layout kernel",
+  "normalized_shape_nchw": [
+    1,
+    3,
+    224,
+    224
+  ],
+  "processor_mean": [
+    0.485,
+    0.456,
+    0.406
+  ],
+  "processor_std": [
+    0.229,
+    0.224,
+    0.225
+  ],
+  "spatial_shape_hwc": [
+    224,
+    224,
+    3
+  ],
+  "torch": "2.15.0+cu132"
+}

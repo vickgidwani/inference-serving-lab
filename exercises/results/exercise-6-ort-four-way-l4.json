@@ -1,0 +1,190 @@
+{
+  "concurrency": 1,
+  "conditions": {
+    "cpu_preprocess_cpu_ort": {
+      "cuda_tf32": null,
+      "inference": "CPUExecutionProvider",
+      "latency_ms": {
+        "max": 66.094199,
+        "p50": 52.500851,
+        "p95": 54.137692949999995,
+        "p99": 57.76047107000004
+      },
+      "latency_scope": "one sequential request: decode + preprocessing + inference + logits available on CPU",
+      "max_abs_logit_error_vs_cpu_reference": 0.0,
+      "measurement_seconds": 5.278830262999691,
+      "preprocessing": "Hugging Face CPU preprocessing",
+      "request_rate_per_s": 18.943590723293134,
+      "requests": 100,
+      "top5": [
+        {
+          "class_id": 88,
+          "label": "macaw"
+        },
+        {
+          "class_id": 23,
+          "label": "vulture"
+        },
+        {
+          "class_id": 89,
+          "label": "sulphur-crested cockatoo, Kakatoe galerita, Cacatua galerita"
+        },
+        {
+          "class_id": 503,
+          "label": "cocktail shaker"
+        },
+        {
+          "class_id": 96,
+          "label": "toucan"
+        }
+      ]
+    },
+    "cpu_preprocess_gpu_ort": {
+      "cuda_tf32": "enabled",
+      "inference": "CUDAExecutionProvider",
+      "latency_ms": {
+        "max": 15.485573,
+        "p50": 14.5410965,
+        "p95": 14.75684955,
+        "p99": 15.48328511
+      },
+      "latency_scope": "one sequential request: decode + preprocessing + inference + logits available on CPU",
+      "max_abs_logit_error_vs_cpu_reference": 0.016289710998535156,
+      "measurement_seconds": 1.4584247290003987,
+      "preprocessing": "Hugging Face CPU preprocessing; ORT session.run manages H2D/D2H",
+      "request_rate_per_s": 68.5671313791695,
+      "requests": 100,
+      "top5": [
+        {
+          "class_id": 88,
+          "label": "macaw"
+        },
+        {
+          "class_id": 23,
+          "label": "vulture"
+        },
+        {
+          "class_id": 89,
+          "label": "sulphur-crested cockatoo, Kakatoe galerita, Cacatua galerita"
+        },
+        {
+          "class_id": 503,
+          "label": "cocktail shaker"
+        },
+        {
+          "class_id": 96,
+          "label": "toucan"
+        }
+      ]
+    },
+    "cuda_preprocess_gpu_ort_iobinding_tf32_off": {
+      "cuda_tf32": "disabled",
+      "inference": "CUDAExecutionProvider",
+      "latency_ms": {
+        "max": 8.676412,
+        "p50": 8.517261999999999,
+        "p95": 8.574215800000001,
+        "p99": 8.6682148
+      },
+      "latency_scope": "one sequential request: decode + preprocessing + inference + logits available on CPU",
+      "max_abs_logit_error_vs_cpu_reference": 0.0010852813720703125,
+      "max_abs_logit_error_vs_cuda_tf32_off": 0.0,
+      "measurement_seconds": 0.8529727899986028,
+      "preprocessing": "CPU decode; CUDA resize/crop and normalize",
+      "request_rate_per_s": 117.23703402093729,
+      "requests": 100,
+      "top5": [
+        {
+          "class_id": 88,
+          "label": "macaw"
+        },
+        {
+          "class_id": 23,
+          "label": "vulture"
+        },
+        {
+          "class_id": 89,
+          "label": "sulphur-crested cockatoo, Kakatoe galerita, Cacatua galerita"
+        },
+        {
+          "class_id": 503,
+          "label": "cocktail shaker"
+        },
+        {
+          "class_id": 96,
+          "label": "toucan"
+        }
+      ]
+    },
+    "cuda_preprocess_gpu_ort_iobinding_tf32_on": {
+      "cuda_tf32": "enabled",
+      "inference": "CUDAExecutionProvider",
+      "latency_ms": {
+        "max": 7.715142,
+        "p50": 7.4345435,
+        "p95": 7.591345,
+        "p99": 7.6795465499999995
+      },
+      "latency_scope": "one sequential request: decode + preprocessing + inference + logits available on CPU",
+      "max_abs_logit_error_vs_cpu_reference": 0.016289710998535156,
+      "max_abs_logit_error_vs_cuda_tf32_off": 0.01632213592529297,
+      "measurement_seconds": 0.7457598269975279,
+      "preprocessing": "CPU decode; CUDA resize/crop and normalize",
+      "request_rate_per_s": 134.09142780270932,
+      "requests": 100,
+      "top5": [
+        {
+          "class_id": 88,
+          "label": "macaw"
+        },
+        {
+          "class_id": 23,
+          "label": "vulture"
+        },
+        {
+          "class_id": 89,
+          "label": "sulphur-crested cockatoo, Kakatoe galerita, Cacatua galerita"
+        },
+        {
+          "class_id": 503,
+          "label": "cocktail shaker"
+        },
+        {
+          "class_id": 96,
+          "label": "toucan"
+        }
+      ]
+    }
+  },
+  "experiment": "exercise-6-four-way-preprocess-and-ort-comparison",
+  "image": "artifacts/parrots.png",
+  "measured_requests_per_condition": 100,
+  "model": "models/classify_dynamic/1/model.onnx",
+  "notes": [
+    "Conditions run sequentially; throughput is single-client sequential throughput, not a concurrency/load test.",
+    "GPU request timing includes device completion; GPU outputs are copied to CPU so logits are available for comparison.",
+    "CPU-preprocess + GPU-ORT uses session.run with a CPU NumPy input, so ORT manages H2D/D2H copies.",
+    "CUDA-preprocess + GPU-ORT decodes on CPU, then keeps resize/crop, normalization, and inference on GPU; I/O Binding copies only logits back.",
+    "The two CUDA-preprocess + GPU-ORT conditions differ only in the explicit ORT use_tf32 provider option.",
+    "The CPU-preprocess + GPU-ORT condition uses the TF32-enabled CUDA session."
+  ],
+  "runtime": {
+    "cpu_session_providers": [
+      "CPUExecutionProvider"
+    ],
+    "cuda_tf32_off_session_providers": [
+      "CUDAExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "cuda_tf32_on_session_providers": [
+      "CUDAExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "gpu": "NVIDIA L4",
+    "onnxruntime": "1.32.0",
+    "platform": "Linux-7.0.0-1017-gcp-x86_64-with-glibc2.39",
+    "python": "3.12.3",
+    "torch": "2.15.0+cu132"
+  },
+  "warmup_requests_per_condition": 10
+}
