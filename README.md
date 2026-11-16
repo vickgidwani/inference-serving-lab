@@ -2,7 +2,7 @@
 
 A hands-on lab for a pretrained Hugging Face image model: export PyTorch ResNet-50 to ONNX, serve it with NVIDIA Triton Inference Server, move image tensor conversion/normalization into a custom CUDA kernel, and profile latency across preprocessing and serving contracts.
 
-The model is [`microsoft/resnet-50`](https://huggingface.co/microsoft/resnet-50), a ResNet-50 v1.5 ImageNet-1k classifier with 1,000 output classes and an Apache 2.0 model card. The model and processor are pinned to Hub revision `34c2154f194f829b11125337b98c8f5f9965ff19` so the weights and preprocessing settings stay reproducible. The processor resizes/crops to 224×224 and applies ImageNet channel normalization; its exact parameters are loaded from the model card rather than duplicated in code. See the [pinned processor config](https://huggingface.co/microsoft/resnet-50/blob/34c2154f194f829b11125337b98c8f5f9965ff19/preprocessor_config.json).
+The model is [`microsoft/resnet-50`](https://huggingface.co/microsoft/resnet-50), a ResNet-50 v1.5 ImageNet-1k classifier with 1,000 output classes and an Apache 2.0 model card. The model and processor are pinned to Hub revision `34c2154c194f829b11125337b98c8f5f9965ff19` so the weights and preprocessing settings stay reproducible. The processor resizes/crops to 224×224 and applies ImageNet channel normalization; its exact parameters are loaded from the model card rather than duplicated in code. See the [pinned processor config](https://huggingface.co/microsoft/resnet-50/blob/34c2154c194f829b11125337b98c8f5f9965ff19/preprocessor_config.json).
 
 ## What you will practice
 
@@ -83,7 +83,7 @@ curl -s localhost:8000/v2/models/classify_dynamic/ready
 
 ### Run on a GCP VM with an NVIDIA L4
 
-This lab uses a Compute Engine `g2-standard-4` VM, which has 4 vCPUs, 16 GiB of memory, and one NVIDIA L4 GPU. Use Ubuntu 24.04 with an NVIDIA driver installed; this setup was verified with Google's `common-cu129-ubuntu-2404-nvidia-580` image and driver 580. The setup script installs Docker Engine, Compose, the NVIDIA Container Toolkit, and the lab's Python exporter/client extras. It checks GPU and driver compatibility, writes the selected Triton image to the ignored `.env.gpu-vm` file, and verifies GPU access from a container. If the VM image has no `python` command with pip, it creates a `.venv`. It does not install or replace the host NVIDIA driver.
+The active Compute Engine instance is `g2-standard-4` with 4 vCPUs, 16 GiB of system memory, one NVIDIA L4 GPU, and a 100 GiB balanced persistent boot disk. The boot disk was increased from 50 GiB to 100 GiB to provide room for the VM image, Triton container, Python environment, and CUDA tools; this added storage, not system memory. Use Ubuntu 24.04 with an NVIDIA driver installed; this setup was verified with Google's `common-cu129-ubuntu-2404-nvidia-580` image and driver 580. The setup script installs Docker Engine, Compose, the NVIDIA Container Toolkit, and the lab's Python exporter/client extras. It checks GPU and driver compatibility, writes the selected Triton image to the ignored `.env.gpu-vm` file, and verifies GPU access from a container. If the VM image has no `python` command with pip, it creates a `.venv`. It does not install or replace the host NVIDIA driver.
 
 Clone the public repository on the VM and run the setup script:
 
@@ -195,7 +195,7 @@ Lip reading is a useful later extension after the image pipeline is working. A [
 ## References
 
 - [Hugging Face ResNet-50 model card](https://huggingface.co/microsoft/resnet-50)
-- [Pinned image processor configuration](https://huggingface.co/microsoft/resnet-50/blob/34c2154f194f829b11125337b98c8f5f9965ff19/preprocessor_config.json)
+- [Pinned image processor configuration](https://huggingface.co/microsoft/resnet-50/blob/34c2154c194f829b11125337b98c8f5f9965ff19/preprocessor_config.json)
 - [Hugging Face image processor docs](https://huggingface.co/docs/transformers/main/image_processors)
 - [PyTorch ONNX export](https://docs.pytorch.org/docs/stable/onnx_export.html)
 - [Triton model configuration](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/user_guide/model_configuration.html)
