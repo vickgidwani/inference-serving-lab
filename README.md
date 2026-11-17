@@ -1,8 +1,20 @@
-# Inference Serving Lab
+# GPU Inference Serving — ONNX, Triton, and CUDA
 
 A hands-on lab for a pretrained Hugging Face image model: export PyTorch ResNet-50 to ONNX, serve it with NVIDIA Triton Inference Server, move image tensor conversion/normalization into a custom CUDA kernel, and profile latency across preprocessing and serving contracts.
 
 The model is [`microsoft/resnet-50`](https://huggingface.co/microsoft/resnet-50), a ResNet-50 v1.5 ImageNet-1k classifier with 1,000 output classes and an Apache 2.0 model card. The model and processor are pinned to Hub revision `34c2154c194f829b11125337b98c8f5f9965ff19` so the weights and preprocessing settings stay reproducible. The processor resizes/crops to 224×224 and applies ImageNet channel normalization; its exact parameters are loaded from the model card rather than duplicated in code. See the [pinned processor config](https://huggingface.co/microsoft/resnet-50/blob/34c2154c194f829b11125337b98c8f5f9965ff19/preprocessor_config.json).
+
+## Status
+
+- **Recorded.** Exercises 1–6 have benchmarks. Exercise 7 has an API contract design write-up.
+- **Open design drill.** [Model update and rollback](exercises/model-update-and-rollback.md) extends the serving contract.
+- **Optional and planned.** Lip reading and deployment precision, including INT8, QAT, and pruning. See the [exercise index](exercises/README.md).
+
+## Quick review
+
+On the L4 VM, [export the model and download the example image](#setup-and-run), then set up [GPU ONNX Runtime](#onnx-runtime) and the [CUDA extension](#custom-cuda-preprocessing). Run `python exercises/ort_cuda_iobinding.py --profile --disable-tf32` from this lab directory. Check top-five agreement against CPU ORT and use the profile to identify where the graph ran. See the [saved diagnostic](exercises/results.md#ort-cuda-execution-provider-with-io-binding) and [four-way comparison](exercises/results.md#four-way-end-to-end-comparison).
+
+For the serving discussion, compare [concurrency 8](exercises/results.md#8-ms-queue-delay-at-concurrency-8) with [concurrency 16](exercises/results.md#8-ms-queue-delay-at-concurrency-16) at the same 8 ms queue delay. Successful throughput rose from about 718 to 751 requests/sec, while SLO misses rose from 0.8% to 55.8%. Explain why successful-request percentiles and total-offered-load failure rates answer different questions.
 
 ## What you will practice
 
@@ -188,7 +200,7 @@ Profiling adds overhead. Use traces to inspect copies and launches; use unprofil
 
 ## Exercises
 
-Start with [the exercise index](exercises/README.md). It covers model export, image preprocessing, serving contracts, queue/compute profiling, and a CUDA spatial-transform extension.
+Start with [the exercise index](exercises/README.md) and the [recorded benchmarks](exercises/results.md). For Bridge Realtime prep, the [CUDA I/O Binding comparison](exercises/results.md#ort-cuda-execution-provider-with-io-binding) gives you a device-resident handoff to explain. The optional [deployment precision exercise](exercises/README.md#deployment-precision-and-model-compression) covers FP16, INT8, and model compression.
 
 Lip reading is a useful later extension after the image pipeline is working. A [visual-only Auto-AVSR checkpoint](https://huggingface.co/simonlesaumon/lrs3-lipreader-visual-only) documents 88×88 grayscale mouth crops at 25 fps and a research/non-commercial license. That version adds face/mouth tracking, temporal sampling, variable-length clips, and CTC decoding, which makes it a good sequence-serving follow-up.
 

@@ -2,7 +2,7 @@
 
 Record the GPU, driver, server image, model revision/hash, processor revision, contract, batch size, concurrency, and command for every result. Use the same host and an idle GPU for comparisons.
 
-**Status:** Core exercises 1–7 are complete. Exercise 8 is an optional lip-reading stretch project.
+Exercises 1–6 have recorded measurements. Exercise 7 is a documented design review. Exercise 8 and the deployment precision exercise are optional.
 
 1. **Export and inspect.** Export the pinned ResNet-50. Inspect ONNX inputs/outputs, opset, dynamic batch range, and graph size. Compare top five labels from ONNX Runtime with Hugging Face PyTorch for the same image.
 2. **Preprocessing fidelity.** Compare Hugging Face's full processor output to the uint8 spatial output used by the custom kernel. Confirm the CUDA tensor conversion matches within tolerance. Change the resampling mode or normalization values and observe how the classifier logits move.
@@ -12,6 +12,17 @@ Record the GPU, driver, server image, model revision/hash, processor revision, c
 6. **CUDA spatial transform.** Extend the CUDA code to resize and center-crop directly from decoded RGB input. Preserve the pinned processor's geometry and interpolation behavior, then use ONNX Runtime I/O Binding to pass the normalized CUDA tensor directly to the CUDA Execution Provider. Compare four full paths: CUDA resize/crop/normalization + GPU ORT with TF32 enabled; that same CUDA + GPU path with TF32 disabled; Hugging Face CPU preprocessing + CPU ORT; and Hugging Face CPU preprocessing + GPU ORT (where `session.run` manages input/output copies, with TF32 enabled). Image decoding remains on CPU in both CUDA-preprocessing cases. Run the correctness/profile diagnostic with `python exercises/ort_cuda_iobinding.py`; run the sequential latency comparison with `python exercises/bench_exercise6_ort.py`. Both use the recorded parrots sample. The benchmark automatically compares both TF32 settings; use `--disable-tf32` on the diagnostic to compare CUDA numerical error and `--profile` to see node placement by provider. The benchmark writes its JSON report under ignored `artifacts/` by default.
 7. **Contract design review (complete).** Define an online raw-image endpoint and a synchronous bulk endpoint, with async jobs for work expected to exceed 10 seconds. The proposed contract is recorded in [results.md](results.md).
 8. **Optional lip-reading stretch.** Replace the image model with a visual-only Auto-AVSR checkpoint. Its documented input is 88×88 grayscale mouth crops at 25 fps; add face/mouth tracking, fixed-rate temporal sampling, variable-length clip batching, and CTC decoding. Review the checkpoint's research/non-commercial terms before using it.
+
+For realtime prep, follow the API contract review with the [model update and rollback drill](model-update-and-rollback.md).
+
+## Deployment precision and model compression
+
+Optional and planned. Start with the pinned ResNet-50 and a labeled, representative evaluation set. The single parrots image is useful for export and parity checks.
+
+1. **FP32 and FP16 inference.** Use the same GPU, runtime, preprocessing, and inputs. Record TF32 settings, actual operator precision and placement, and any fallback. Measure batch-1 engine latency and end-to-end p99 separately. Record peak device memory, engine size, and task accuracy.
+2. **INT8 post-training quantization.** Calibrate on a representative subset separate from evaluation. Compare quality and latency with the floating-point baselines and inspect which operations execute in INT8. Define the acceptable quality delta before testing. [TensorRT quantization guide](https://docs.nvidia.com/deeplearning/tensorrt/latest/inference-library/work-with-quantized-types.html)
+3. **Quantization-aware training.** If INT8 helps latency but misses the quality target, fine-tune with fake quantization on a labeled training split and benchmark the exported INT8 engine on the same evaluation set. Record whether QAT recovers enough accuracy to justify the added training and export complexity.
+4. **Pruning.** Compare one structured variant with the dense baseline at matched precision. Remove channels so dense tensors shrink, or use a supported 2:4 layout and verify the runtime chooses sparse kernels. Report parameter count, task accuracy, and measured latency. [TensorRT sparsity guide](https://docs.nvidia.com/deeplearning/tensorrt/latest/inference-library/data-formats-tensors.html#sparsity)
 
 ## Result template
 
